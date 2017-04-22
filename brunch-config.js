@@ -43,7 +43,7 @@ exports.config = {
     watched: [
       "web/static",
       "test/static",
-      "web/elm/FleetBattle.elm"
+      "web/elm"
     ],
 
     // Where to compile files to
@@ -57,9 +57,9 @@ exports.config = {
       ignore: [/web\/static\/vendor/]
     },
     elmBrunch: {
-      executablePath: './node_modules/elm/binwrappers',
+      // executablePath: '../../node_modules/elm/binwrappers',
       elmFolder: "web/elm",
-      mainModules: ["FleetBattle.elm"],
+      mainModules: ["App.elm"],
       outputFolder: "../static/vendor"
     }
   },

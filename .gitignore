@@ -23,3 +23,5 @@ erl_crash.dump
 # variables.
 /config/prod.secret.exs
 web/elm/elm-stuff/packages
+web/elm/elm-stuff/build-artifacts/
+web/static/vendor/app.js
