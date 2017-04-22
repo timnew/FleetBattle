@@ -1,6 +1,6 @@
 module Update exposing (update, subscriptions)
 
-import Model exposing (..)
+import Types exposing (..)
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
