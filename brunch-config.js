@@ -61,7 +61,10 @@ exports.config = {
       elmFolder: "web/elm",
       mainModules: ["App.elm"],
       outputFolder: "../static/vendor"
-    }
+    },
+    sass: {
+     sourceMapEmbed: true
+   }
   },
 
   modules: {
