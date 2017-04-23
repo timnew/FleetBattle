@@ -1,19 +1,23 @@
 module App exposing (main)
 
 import Html exposing (..)
+import Html.Attributes exposing (..)
+import Html.Events exposing (onClick)
 import Svg
 import Svg.Attributes exposing (xlinkHref)
-import Html.Attributes exposing (..)
 
 
-type alias Player =
-    String
+--
+-- type CellStatus
+--     = Blank
+--     | Ship
+--     | Wreck
 
 
 type Cell
-    = Blank
-    | Ship
-    | Wreck
+    = Blank Int
+    | Ship Int
+    | Wreck Int
 
 
 type Force
@@ -22,38 +26,62 @@ type Force
 
 
 type alias Grid =
-    { force : Force
-    , cells : List Cell
-    }
+    List Cell
 
 
-newGrid : Force -> Grid
-newGrid force =
-    { force = force
-    , cells = List.repeat (4 * 4) Blank
-    }
+newGrid : Force -> Cell -> Grid
+newGrid force prototype =
+    let
+        cellConstructor =
+            case prototype of
+                Blank _ ->
+                    Blank
+
+                Ship _ ->
+                    Ship
+
+                Wreck _ ->
+                    Wreck
+    in
+        (List.range 0 15) |> List.map cellConstructor
 
 
 type alias Model =
-    { players : ( Player, Player )
-    , grids : ( Grid, Grid )
+    { mineGrid : Grid
+    , yourGrid : Grid
     }
 
 
 type Msg
-    = Something
+    = PlaceAt Int
+    | BombAt Int
 
 
-init : ( Model, Cmd Msg )
-init =
-    ( Model ( "Mine", "Yours" ) ( newGrid (Mine), newGrid (Yours) )
-    , Cmd.none
-    )
+placeAt : Int -> Model -> Model
+placeAt index model =
+    model
+
+
+bombAt : Int -> Model -> Model
+bombAt index model =
+    model
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
 update msg model =
-    ( model, Cmd.none )
+    case msg of
+        PlaceAt index ->
+            ( placeAt index model, Cmd.none )
+
+        BombAt index ->
+            ( bombAt index model, Cmd.none )
+
+
+init : ( Model, Cmd Msg )
+init =
+    ( (Model (newGrid Mine (Blank 0)) (newGrid Yours (Ship 0)))
+    , Cmd.none
+    )
 
 
 subscriptions : Model -> Sub Msg
@@ -71,49 +99,63 @@ class_for force =
             "mine"
 
 
-cell : Cell -> Html Msg
-cell cell =
+message_creator : Force -> Int -> Msg
+message_creator force index =
+    case force of
+        Yours ->
+            BombAt index
+
+        Mine ->
+            PlaceAt index
+
+
+cellWrapper : (Int -> Msg) -> Int -> List (Html Msg) -> Html Msg
+cellWrapper message index children =
+    div [ class "cell", onClick (message index) ] children
+
+
+cell : (Int -> Msg) -> Cell -> Html Msg
+cell message cell =
+    case cell of
+        Ship index ->
+            cellWrapper message
+                index
+                [ Svg.svg
+                    [ Svg.Attributes.class "icon" ]
+                    [ Svg.use [ xlinkHref "#icon-ship" ] []
+                    ]
+                ]
+
+        Wreck index ->
+            cellWrapper message
+                index
+                [ Svg.svg
+                    [ Svg.Attributes.class "icon" ]
+                    [ Svg.use [ xlinkHref "#icon-wreck" ] []
+                    ]
+                ]
+
+        Blank index ->
+            cellWrapper message
+                index
+                []
+
+
+grid : Force -> Grid -> Html Msg
+grid force cells =
     let
-        children =
-            case cell of
-                Ship ->
-                    [ Svg.svg
-                        [ Svg.Attributes.class "icon" ]
-                        [ Svg.use [ xlinkHref "#icon-ship" ] []
-                        ]
-                    ]
-
-                Wreck ->
-                    [ Svg.svg
-                        [ Svg.Attributes.class "icon" ]
-                        [ Svg.use [ xlinkHref "#icon-wreck" ] []
-                        ]
-                    ]
-
-                Blank ->
-                    []
+        cellRender =
+            cell (message_creator force)
     in
-        div [ class "cell" ] children
-
-
-grid : Grid -> Html Msg
-grid { force, cells } =
-    div [ class ("grid " ++ class_for force) ] (List.map cell cells)
+        div [ class ("grid " ++ class_for force) ] (List.map cellRender cells)
 
 
 root : Model -> Html Msg
-root { players, grids } =
-    let
-        ( player1, player2 ) =
-            players
-
-        ( grid1, grid2 ) =
-            grids
-    in
-        div [ class "game" ]
-            [ grid grid1
-            , grid grid2
-            ]
+root { mineGrid, yourGrid } =
+    div [ class "game" ]
+        [ grid Mine mineGrid
+        , grid Yours yourGrid
+        ]
 
 
 main : Program Never Model Msg
