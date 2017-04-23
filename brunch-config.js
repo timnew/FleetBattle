@@ -60,7 +60,8 @@ exports.config = {
       // executablePath: '../../node_modules/elm/binwrappers',
       elmFolder: "web/elm",
       mainModules: ["App.elm"],
-      outputFolder: "../static/vendor"
+      outputFolder: "../static/vendor",
+      makeParameters : ['--debug']
     },
     sass: {
      sourceMapEmbed: true

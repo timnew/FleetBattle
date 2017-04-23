@@ -5,13 +5,7 @@ import Html.Attributes exposing (..)
 import Html.Events exposing (onClick)
 import Svg
 import Svg.Attributes exposing (xlinkHref)
-
-
---
--- type CellStatus
---     = Blank
---     | Ship
---     | Wreck
+import Debug
 
 
 type Cell
@@ -57,14 +51,41 @@ type Msg
     | BombAt Int
 
 
+updateCell : Cell -> Cell -> Cell -> Cell
+updateCell expect replacement actual =
+    if actual == expect then
+        Debug.log "replaced" replacement
+    else
+        Debug.log "ignored" actual
+
+
+updateList : Cell -> Cell -> Grid -> Grid
+updateList expected replacement sourceGrid =
+    List.map (updateCell expected replacement) sourceGrid
+
+
 placeAt : Int -> Model -> Model
 placeAt index model =
-    model
+    let
+        { mineGrid } =
+            model
+
+        newGrid =
+            updateList (Blank index) (Ship index) mineGrid
+    in
+        { model | mineGrid = newGrid }
 
 
 bombAt : Int -> Model -> Model
 bombAt index model =
-    model
+    let
+        { yourGrid } =
+            model
+
+        newGrid =
+            updateList (Ship index) (Wreck index) yourGrid
+    in
+        { model | yourGrid = newGrid }
 
 
 update : Msg -> Model -> ( Model, Cmd Msg )
