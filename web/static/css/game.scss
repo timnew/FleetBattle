@@ -1,8 +1,70 @@
-.grid {
+$grid-width: 300px;
+$grid-size: 4;
+$cell-width: $grid-width / $grid-size;
+$cell-border-color: #999;
+
+$force-mine-color: #6262b1;
+$force-yours-color: #b16262;
+
+.game {
   display: flex;
-  flex-direction: row;
+  flex-grow: row wrap;
+  justify-content: space-around;
+}
+
+.grid {
+  border: 1px solid $cell-border-color;
+  box-sizing: content-box;
+  display: flex;
+  flex-flow: row wrap;
+  width: $grid-width;
 }
 
 .cell {
-  color: red;
+  border: 1px solid $cell-border-color;
+  height: $cell-width;
+  text-align: center;
+  vertical-align: middle;
+  width: $cell-width;
+}
+
+.icon-defs {
+  display: none;
+}
+
+.icon {
+  display: inline-block;
+  vertical-align: middle;
+  text-align: center;
+  padding: 5px;
+  stroke-width: 0;
+  fill: currentColor;
+  stroke: currentColor;
+  height: $cell-width;
+  width: $cell-width;
+}
+
+
+.grid {
+  &.mine {
+    border: 1px solid $force-mine-color;;
+    .cell {
+      border: 1px solid $force-mine-color;
+      .icon {
+        fill: $force-mine-color;
+        stroke: $force-mine-color;
+      }
+    }
+  }
+
+  &.yours {
+    border: 1px solid $force-yours-color;
+    .cell {
+      border: 1px solid $force-yours-color;
+      .icon {
+        fill: $force-yours-color;
+        stroke: $force-yours-color;
+      }
+    }
+}
 }

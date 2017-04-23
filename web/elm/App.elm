@@ -1,6 +1,8 @@
 module App exposing (main)
 
 import Html exposing (..)
+import Svg
+import Svg.Attributes exposing (xlinkHref)
 import Html.Attributes exposing (..)
 
 
@@ -10,17 +12,26 @@ type alias Player =
 
 type Cell
     = Blank
-    | Ship Player
-    | Damaged Player
+    | Ship
+    | Wreck
+
+
+type Force
+    = Mine
+    | Yours
 
 
 type alias Grid =
-    List Cell
+    { force : Force
+    , cells : List Cell
+    }
 
 
-newGrid : Grid
-newGrid =
-    List.repeat 9 Blank
+newGrid : Force -> Grid
+newGrid force =
+    { force = force
+    , cells = List.repeat (4 * 4) Blank
+    }
 
 
 type alias Model =
@@ -35,7 +46,7 @@ type Msg
 
 init : ( Model, Cmd Msg )
 init =
-    ( Model ( "P1", "P2" ) ( newGrid, newGrid )
+    ( Model ( "Mine", "Yours" ) ( newGrid (Mine), newGrid (Yours) )
     , Cmd.none
     )
 
@@ -50,16 +61,44 @@ subscriptions model =
     Sub.none
 
 
+class_for : Force -> String
+class_for force =
+    case force of
+        Yours ->
+            "yours"
+
+        Mine ->
+            "mine"
+
+
 cell : Cell -> Html Msg
 cell cell =
-    div [ class "cell" ]
-        [ text "cell"
-        ]
+    let
+        children =
+            case cell of
+                Ship ->
+                    [ Svg.svg
+                        [ Svg.Attributes.class "icon" ]
+                        [ Svg.use [ xlinkHref "#icon-ship" ] []
+                        ]
+                    ]
+
+                Wreck ->
+                    [ Svg.svg
+                        [ Svg.Attributes.class "icon" ]
+                        [ Svg.use [ xlinkHref "#icon-wreck" ] []
+                        ]
+                    ]
+
+                Blank ->
+                    []
+    in
+        div [ class "cell" ] children
 
 
 grid : Grid -> Html Msg
-grid gridData =
-    div [ class "gird" ] (List.map cell gridData)
+grid { force, cells } =
+    div [ class ("grid " ++ class_for force) ] (List.map cell cells)
 
 
 root : Model -> Html Msg
@@ -71,7 +110,7 @@ root { players, grids } =
         ( grid1, grid2 ) =
             grids
     in
-        div []
+        div [ class "game" ]
             [ grid grid1
             , grid grid2
             ]
